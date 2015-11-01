@@ -1,0 +1,22 @@
+<h3>Thanks for playing!</h3>
+
+<% if session[:chip_total] <= 0%>
+  <strong>Too bad, looks like you're out of money for today.</strong>
+<% elsif session[:chip_total] > 0 && session[:chip_total] < 500 %>
+  <strong>Too bad, looks like you lost a bit of money today.</strong>
+  <br/>
+  Final chip total:
+  <h4>$<%= session[:chip_total] %></h4>
+<% elsif session[:chip_total] > 500 %>
+  <strong>Congratulations! Looks like lady luck was on your side today</strong>
+  <br/>
+  Final chip total:
+  <h4>$<%= session[:chip_total] %></h4>
+<% else %>
+  <strong>Hey, breaking even isn't bad. Nice job!</strong>
+  <br/>
+  Final chip total:
+  <h4>$<%= session[:chip_total] %></h4>
+<% end %>
+<br/>
+<a href="/new_player">Start over</a>

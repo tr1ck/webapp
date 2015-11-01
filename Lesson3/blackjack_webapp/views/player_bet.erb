@@ -1,0 +1,11 @@
+<h5>Currently you have a chip total of: $<%= session[:chip_total] %></h5>
+
+<p>
+  <h6>How much would you like to bet this round?</h6>
+  Hitting Blackjack pays double!
+  <form action='/game/player_bet' method='post'>
+    <input type='text' name='wager' />
+    <br/>
+    <input type='submit' class='btn btn-success' value='Place Bet' />
+  </form>
+</p>
