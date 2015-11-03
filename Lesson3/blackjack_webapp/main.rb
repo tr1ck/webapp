@@ -2,7 +2,9 @@ require 'rubygems'
 require 'sinatra'
 require 'pry'
 
-set :sessions, true
+use Rack::Session::Cookie, :key => 'rack.session',
+                           :path => '/',
+                           :secret => 'secret_string' 
 
 BLACKJACK = 21
 DEALER_STAY = 17
@@ -38,7 +40,7 @@ helpers do
   def loser!(msg)
     @play_again = true
     @show_hit_or_stay_buttons = false
-    @error = "<strong>Dealer wins.</strong> #{msg}"
+    @loser = "<strong>Dealer wins.</strong> #{msg}"
     if broke?
       redirect '/game_over'
     end
@@ -48,13 +50,13 @@ helpers do
     raise_chip_total(session[:player_bet])
     @play_again = true
     @show_hit_or_stay_buttons = false
-    @success = "<strong>#{session[:player_name]} wins!</strong> #{msg}"
+    @winner = "<strong>#{session[:player_name]} wins!</strong> #{msg}"
   end
 
   def tie!(msg)
     @play_again = true
     @show_hit_or_stay_buttons = false
-    @success = "<strong>This round is a tie.</strong> #{msg}"
+    @winner = "<strong>This round is a tie.</strong> #{msg}"
   end
 
   def raise_chip_total(wager)
@@ -85,7 +87,7 @@ end
 
 post '/new_player' do
   if params[:player_name].empty?
-    @error = "Name is required to continue."
+    @loser = "Name is required to continue."
     halt erb :new_player
   end
 
@@ -126,13 +128,13 @@ post '/game/player_bet' do
   session[:player_bet] = params[:wager]
 
   if session[:player_bet].empty?
-    @error = "You must enter a wager to continue."
+    @loser = "You must enter a wager to continue."
     halt erb :player_bet
   elsif session[:player_bet].to_i.to_s != session[:player_bet]
-    @error = "Please use whole numbers only."
+    @loser = "Please use whole numbers only."
     halt erb :player_bet
   elsif  session[:player_bet].to_i > session[:chip_total]
-    @error = "You can't bet more than you have."
+    @loser = "You can't bet more than you have."
     halt erb :player_bet
   else
     session[:player_bet] = session[:player_bet].to_i
@@ -149,11 +151,11 @@ post '/game/player/hit' do
     loser!("Busted!! Sorry you lose this round")
   end
 
-  erb :game
+  erb :game, layout: false
 end
 
 post '/game/player/stay' do
-  @success = "You have chosen to stay with a total of
+  @winner = "You have chosen to stay with a total of
   #{calculate_total(session[:players_cards])}."
   @show_hit_or_stay_buttons = false
   redirect '/game/dealer'
@@ -178,7 +180,7 @@ get '/game/dealer' do
     @show_dealer_hit_button = true
   end
 
-  erb :game
+  erb :game, layout: false
 end
 
 post '/game/dealer/hit' do
@@ -201,7 +203,7 @@ get '/game/compare' do
     tie!("You and the dealer both stayed at #{player_total}.")
   end
 
-  erb :game
+  erb :game, layout: false
 end
 
 get '/game_over' do
